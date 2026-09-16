@@ -12,9 +12,9 @@ from ui.main_view import MainView
 class AplicacionRestaurante:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Restaurante App - Semana 13")
-        self.root.geometry("760x560")
-        self.root.minsize(700, 520)
+        self.root.title("Restaurante App - Semana 14")
+        self.root.geometry("1040x680")
+        self.root.minsize(940, 620)
 
         ruta_base = Path(__file__).resolve().parent
         archivo_servicio = ArchivoServicio(ruta_base / "datos")

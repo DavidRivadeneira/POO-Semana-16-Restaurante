@@ -1,4 +1,4 @@
-"""Producto de Semana 12 adaptado a la consulta gráfica de Semana 13."""
+"""Conserva los atributos del producto y valida sus datos para la gestión gráfica."""
 from math import isfinite
 
 
@@ -21,7 +21,10 @@ class Producto:
 
     @codigo.setter
     def codigo(self, valor):
-        self._codigo = self.validar_texto(valor, "código")
+        valor = self.validar_texto(valor, "código")
+        if hasattr(self, "_codigo") and valor != self._codigo:
+            raise ValueError("El código identifica al producto y no se puede cambiar.")
+        self._codigo = valor
 
     @property
     def nombre(self):
@@ -56,3 +59,7 @@ class Producto:
         if type(valor) is not int or valor < 0:
             raise ValueError("El stock debe ser un entero no negativo.")
         self._stock = valor
+
+    def convertir_a_diccionario(self):
+        return {"codigo": self.codigo, "nombre": self.nombre,
+                "precio": self.precio, "stock": self.stock}

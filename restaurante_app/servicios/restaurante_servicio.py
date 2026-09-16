@@ -9,6 +9,7 @@ class RestauranteServicio:
         self._usuarios = []
         self._productos = []
         self._usuarios_por_acceso = {}
+        self._productos_por_codigo = {}
         self.cargar_datos()
 
     def cargar_datos(self):
@@ -35,6 +36,7 @@ class RestauranteServicio:
         self._usuarios = usuarios
         self._productos = productos
         self._usuarios_por_acceso = indice
+        self._productos_por_codigo = {p.codigo: p for p in productos}
 
     def validar_acceso(self, usuario, contrasena):
         usuario = usuario.strip()
@@ -57,3 +59,50 @@ class RestauranteServicio:
 
     def cantidad_productos(self):
         return len(self._productos)
+
+    def buscar_producto_por_codigo(self, codigo):
+        codigo = Producto.validar_texto(codigo, "código")
+        return self._productos_por_codigo.get(codigo)
+
+    @staticmethod
+    def _crear_producto(codigo, nombre, precio, stock):
+        # Entry entrega texto. Su conversión y validación pertenecen al servicio.
+        if isinstance(stock, str):
+            try:
+                stock = int(stock.strip())
+            except ValueError:
+                raise ValueError("El stock debe ser un entero no negativo.") from None
+        if isinstance(precio, str):
+            precio = precio.strip().replace(",", ".")
+        return Producto(codigo, nombre, precio, stock)
+
+    def _guardar_cambios(self, productos):
+        datos = [p.convertir_a_diccionario() for p in productos]
+        # Si el guardado falla, las listas e índices conservan su estado anterior.
+        self.archivo_servicio.escribir_json("productos.json", datos)
+        self._productos = productos
+        self._productos_por_codigo = {p.codigo: p for p in productos}
+
+    def registrar_producto(self, codigo, nombre, precio, stock):
+        producto = self._crear_producto(codigo, nombre, precio, stock)
+        if self.buscar_producto_por_codigo(producto.codigo) is not None:
+            raise ValueError("Ya existe un producto con ese código.")
+        self._guardar_cambios(self._productos + [producto])
+        return producto
+
+    def actualizar_producto(self, codigo, nombre, precio, stock):
+        actual = self.buscar_producto_por_codigo(codigo)
+        if actual is None:
+            raise ValueError("No existe un producto con ese código.")
+        actualizado = self._crear_producto(actual.codigo, nombre, precio, stock)
+        productos = [actualizado if p.codigo == actual.codigo else p
+                     for p in self._productos]
+        self._guardar_cambios(productos)
+        return actualizado
+
+    def eliminar_producto(self, codigo):
+        actual = self.buscar_producto_por_codigo(codigo)
+        if actual is None:
+            raise ValueError("No existe un producto con ese código.")
+        self._guardar_cambios([p for p in self._productos if p.codigo != actual.codigo])
+        return actual

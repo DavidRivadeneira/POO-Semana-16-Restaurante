@@ -23,7 +23,7 @@ class LoginView(tk.Frame):
         contenedor.place(relx=0.5, rely=0.5, anchor="center")
         tk.Label(contenedor, text="RESTAURANTE APP", bg="white", fg="#472d23",
                  font=("Arial", 22, "bold")).pack(pady=(0, 8))
-        tk.Label(contenedor, text="Inicia sesión para consultar el restaurante",
+        tk.Label(contenedor, text="Inicia sesión para gestionar el restaurante",
                  bg="white", fg="#67594f", font=("Arial", 11)).pack(pady=(0, 22))
 
         tk.Label(contenedor, text="Usuario", bg="white",
@@ -35,8 +35,6 @@ class LoginView(tk.Frame):
                  font=("Arial", 10, "bold")).pack(anchor="w")
         self.contrasena_entry = tk.Entry(contenedor, show="*", font=("Arial", 11))
         self.contrasena_entry.pack(fill="x", pady=(5, 10), ipady=4)
-        for entrada in (self.usuario_entry, self.contrasena_entry):
-            entrada.bind("<Return>", lambda evento: self.iniciar_sesion())
 
         self.mensaje_error = tk.Label(contenedor, text="", bg="white", fg="#b42318",
                                       font=("Arial", 10))
@@ -44,7 +42,7 @@ class LoginView(tk.Frame):
         self.boton_ingresar = ttk.Button(contenedor, text="Iniciar sesión",
                                          style="Login.TButton", command=self.iniciar_sesion)
         self.boton_ingresar.pack(fill="x")
-        tk.Label(contenedor, text="Acceso de demostración · Semana 13", bg="white",
+        tk.Label(contenedor, text="Acceso de demostración · Semana 14", bg="white",
                  fg="#67594f", font=("Arial", 9)).pack(pady=(16, 0))
 
     def iniciar_sesion(self):

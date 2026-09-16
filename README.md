@@ -1,69 +1,52 @@
-# Restaurante App · Semana 13
+# Restaurante App · Semana 14
 
 **Taller práctico: Organización modular de un sistema orientado a objetos en Python**
 
-**Tema:** Conceptos fundamentales de interfaces gráficas de usuario.
+**Tema:** Componentes y contenedores con Tkinter.
 
-| Dato académico | Información |
+| Información académica | Dato |
 | --- | --- |
 | Estudiante | Juan David Rivadeneira Cuascota |
 | Universidad | Universidad Estatal Amazónica |
 | Asignatura | Programación Orientada a Objetos |
-| Semestre | Segundo semestre |
-| Paralelo | F |
+| Docente | Kevin Bolívar Lascano Sánchez |
+| Semestre y paralelo | Segundo semestre · F |
 | Código del curso | 2626-UEA-L-UFB-030-F |
-| Semana | 13 |
+| Semana | 14 |
 
 ## Propósito
 
-Esta versión incorpora una interfaz gráfica inicial con **Tkinter** a
-`restaurante_app`. Permite iniciar una sesión simulada, consultar productos y
-usuarios cargados desde JSON y cerrar la sesión dentro de la misma ventana.
+Esta versión evoluciona la interfaz gráfica de `restaurante_app` mediante
+componentes y contenedores de Tkinter y ttk. Conserva el inicio de sesión y la
+consulta de usuarios, e incorpora un formulario y una tabla para **registrar,
+cargar por código, actualizar y eliminar productos**.
 
-La organización adapta el proyecto docente Biblioteca App: `Libro` pasa a ser
-`Producto`, `BibliotecaServicio` se adapta como `RestauranteServicio` y se añade
-la carpeta `ui/`. Las vistas presentan información y reciben eventos; los
-servicios mantienen las operaciones y la lectura de archivos.
+Los botones utilizan `command=`. La vista recibe datos y presenta resultados;
+`RestauranteServicio` valida, ejecuta las operaciones y solicita su persistencia
+a `ArchivoServicio`. El objetivo de esta semana es organizar e integrar los
+componentes de la interfaz dentro de la arquitectura existente.
 
-## Continuidad con la Semana 12
+## Continuidad con la Semana 13
 
-- Se conservan los tres productos, sus códigos, nombres, precios y stock.
-- Se conserva el usuario `U001 - ana`, con sus campos `identificacion` y `nombre`.
-  Se añaden `usuario` y `contrasena` para el acceso pedagógico de esta semana.
-- Se mantienen los constructores tradicionales, las propiedades y las
-  validaciones básicas de texto, precio y stock. `Producto` conserva sus cuatro atributos.
-- Las listas contienen objetos y el servicio devuelve copias de las listas.
-  El acceso utiliza un diccionario por nombre de usuario, aplicando la búsqueda
-  por clave estudiada en Semana 12. Este índice se construye al cargar los datos.
-- La conversión de diccionarios a objetos se concentra ahora en
-  `RestauranteServicio`, siguiendo la distribución de responsabilidades docente.
-  `ArchivoServicio` se dedica a leer los JSON.
+El proyecto parte de la [Semana 13](https://github.com/DavidRivadeneira/POO-Semana-13-Restaurante).
+Su historial de Git se conserva como base de esta evolución. Se mantienen los
+modelos `Producto` y `Usuario`, los nombres de sus atributos, los datos iniciales,
+las vistas `LoginView` y `MainView`, los servicios y el flujo de una sola ventana.
 
-Esta entrega es una **base gráfica simplificada e independiente**. Incluye
-únicamente los modelos `Producto` y `Usuario`. La venta completa, el registro y
-la edición de datos quedan para próximas semanas. La versión de consola de
-Semana 12 permanece en su carpeta; sus ventas históricas no se importan aquí.
-El botón **Ventas (pendiente)** solo informa que la función se incorporará después.
-
-### Relación entre ambas entregas
-
-La consigna de Semana 13 pide expresamente comenzar con esta base simplificada.
-Por eso, las funciones de consola de Semana 12 no se trasladan todas a la interfaz
-gráfica en esta entrega. Esta distribución corresponde a las dos actividades:
-
-| Aspecto | Semana 12, recuperación | Semana 13 |
+| Elemento | Semana 13 | Evolución en Semana 14 |
 | --- | --- | --- |
-| Interacción | Menú de consola con registros, búsquedas y ventas. | Login y panel gráfico para consultar información. |
-| Modelos | Producto, Usuario y Venta. | Producto y Usuario. |
-| Datos | Productos, usuarios y ventas en tres JSON. | Productos y usuarios en dos JSON. |
-| Trabajo principal | Búsquedas por índices, ventas por usuario y stock sincronizado. | Una ventana de Tkinter, eventos y consultas mediante servicios. |
-| Ventas | Operación funcional con descuento de stock. | Opción identificada como pendiente. |
+| Acceso | Usuario y contraseña mediante LoginView. | Mismo acceso y validación mediante el servicio. |
+| Navegación | Barra de opciones y panel de consulta. | Menú lateral, sección activa, panel Inicio y conteos actualizados. |
+| Productos | Consulta mediante filas de texto. | Formulario, cinco botones y tabla con desplazamiento. |
+| Usuarios | Consulta de identificación, nombre y usuario. | Mismos datos en una tabla; las contraseñas no se muestran. |
+| Persistencia | Lectura de productos y usuarios desde JSON. | Se añade escritura de productos después de registrar, actualizar o eliminar. |
+| Modelos | Producto con código, nombre, precio y stock; Usuario con datos de acceso. | Mismos atributos; Producto incorpora conversión a diccionario y mantiene estable su código. |
+| Ventas | Opción pendiente. | Continúa identificada como pendiente, fuera del alcance de esta semana. |
 
-Los productos y los datos de identificación y nombre del usuario coinciden con
-la [Semana 12 corregida](https://github.com/DavidRivadeneira/POO-Semana-12-Restaurante).
-En Semana 13 se añaden las credenciales de demostración. Cada entrega conserva
-sus propios archivos JSON: los cambios futuros en una carpeta no modifican
-automáticamente la otra.
+Los JSON iniciales son iguales a los de Semana 13. Cada entrega tiene su propia
+carpeta de datos: las operaciones realizadas aquí no modifican las semanas anteriores.
+Se retira el atajo de Enter del login para utilizar exclusivamente los botones
+mediante `command=` en esta actividad.
 
 ## Estructura
 
@@ -91,50 +74,101 @@ Repositorio/
         └── main_view.py
 ```
 
-| Archivo o capa | Responsabilidad |
+| Capa o archivo | Responsabilidad |
 | --- | --- |
-| `modelos/producto.py` | Representar código, nombre, precio y stock; validar sus valores. |
-| `modelos/usuario.py` | Representar identificación, nombre y credenciales de demostración. |
-| `servicios/archivo_servicio.py` | Leer y validar la estructura básica de los archivos JSON locales. |
-| `servicios/restaurante_servicio.py` | Convertir registros en objetos, validar el acceso, listar usuarios y productos y consultar sus cantidades. |
-| `ui/login_view.py` | Mostrar los campos de acceso, recibir la acción de ingreso y presentar mensajes. |
-| `ui/main_view.py` | Consultar el servicio y mostrar productos, usuarios, conteos y la opción pendiente de ventas. |
-| `main.py` | Crear `AplicacionRestaurante`, preparar los servicios y coordinar las vistas dentro de una única ventana. |
+| `modelos/producto.py` | Representar y validar código, nombre, precio y stock; convertir el producto a diccionario. |
+| `modelos/usuario.py` | Conservar los datos del usuario y las credenciales de demostración. |
+| `servicios/archivo_servicio.py` | Leer y escribir archivos JSON; informar errores de lectura y guardado. |
+| `servicios/restaurante_servicio.py` | Construir objetos, validar acceso, listar y contar registros, consultar productos y ejecutar su gestión. |
+| `ui/login_view.py` | Capturar credenciales, solicitar su validación y mostrar mensajes de acceso. |
+| `ui/main_view.py` | Organizar navegación, formulario, botones, tablas y mensajes; solicitar las operaciones al servicio. |
+| `main.py` | Preparar servicios, crear una única instancia de Tk y cambiar entre vistas con un único mainloop. |
 
-## Flujo de la aplicación
+## Componentes y contenedores
+
+| Componente | Uso real en la aplicación |
+| --- | --- |
+| `Tk` | Ventana principal compartida entre el login y el panel. |
+| `Frame` | Menú lateral, contenido, barra de estado, resumen, acciones y área de tabla. |
+| `LabelFrame` | Agrupar el formulario de productos, el listado y las instrucciones del panel Inicio. |
+| `Label` | Títulos, campos, instrucciones, conteos y mensajes de resultado. |
+| `Entry` y `ttk.Entry` | Capturar credenciales y código, nombre, precio y stock del producto. |
+| `ttk.Button` | Navegar y activar cada operación mediante `command=`. |
+| `ttk.Treeview` | Mostrar productos y usuarios en filas y columnas, sin edición directa. |
+| `ttk.Scrollbar` | Desplazamiento vertical y horizontal de las tablas. |
+| `StringVar` | Mantener el mensaje visible del formulario. |
+| `ttk.Style` | Unificar colores, tipografía y presentación de botones y tablas. |
+| `messagebox` | Confirmar una eliminación e informar que Ventas está pendiente. |
+
+Se usa `pack()` para distribuir las áreas grandes y `grid()` para alinear el
+formulario, el listado y las barras de desplazamiento en sus propios contenedores.
+El login conserva `place()` para centrar su panel. **No se mezclan `pack()` y
+`grid()` entre widgets hermanos dentro del mismo contenedor.**
+
+La ventana se puede redimensionar, con un mínimo de 940 × 620. Se conserva la
+paleta del restaurante de Semana 13. La sección activa se distingue en el menú,
+los resultados aparecen junto al formulario y los conteos se actualizan después
+de modificar productos. No se requieren imágenes ni paquetes externos.
+
+## Operaciones de productos
+
+| Botón | Acción |
+| --- | --- |
+| **Registrar** | Crear un producto con código único, nombre, precio y stock válidos. Guardarlo y refrescar la tabla. |
+| **Cargar por código** | Consultar el código escrito y completar el formulario con los datos existentes. No modifica el JSON. |
+| **Actualizar** | Modificar nombre, precio y stock del producto identificado por el código escrito. Guardar y refrescar la tabla. |
+| **Eliminar** | Consultar el producto, pedir confirmación, eliminarlo, guardar y limpiar el formulario. Cancelar conserva los datos. |
+| **Limpiar** | Vaciar los campos y dejar stock en cero. No modifica los registros. |
+
+Para consultar o editar se escribe el código y se utiliza **Cargar por código**.
+El código identifica al producto y no se renombra. La tabla presenta registros;
+seleccionar una fila no carga ni modifica el formulario.
+
+El servicio convierte los textos numéricos recibidos desde la interfaz y utiliza
+las validaciones del modelo. Rechaza campos obligatorios vacíos, códigos duplicados,
+precios negativos o no finitos y stock negativo o no entero. El precio admite punto
+o coma decimal. Cargar, actualizar o eliminar un código inexistente informa el error.
+El precio cero y el stock cero son válidos, conservando las reglas del modelo anterior.
+
+## Flujo y persistencia
 
 ```text
-main.py → Tkinter + ArchivoServicio + RestauranteServicio
-        → LoginView
-        → ingreso de usuario y contraseña
-        → RestauranteServicio.validar_acceso()
-            ├── datos vacíos o incorrectos → mensaje en LoginView
-            └── acceso correcto → MainView
-                                  ├── Productos registrados
-                                  ├── Usuarios registrados
-                                  ├── Ventas (pendiente)
-                                  └── Cerrar sesión → LoginView
+main.py → LoginView → RestauranteServicio valida el acceso → MainView
+                                                           ├── Inicio: resumen
+                                                           ├── Usuarios: consulta
+                                                           ├── Productos: gestión
+                                                           └── Cerrar sesión → LoginView
+
+Formulario → Botón → RestauranteServicio → Producto valida los datos
+                                       → ArchivoServicio guarda productos.json
+                                       → lista e índice actualizados
+                                       → tabla, conteos y mensaje actualizados
 ```
 
-`AplicacionRestaurante` crea una sola instancia de `Tk()` y ejecuta un solo
-`mainloop()`. `cambiar_vista()` destruye el `Frame` anterior y muestra el nuevo.
-Los servicios se preparan una vez y se comparten entre las vistas.
+- `productos.json` conserva `codigo`, `nombre`, `precio` y `stock`.
+- `usuarios.json` conserva `identificacion`, `nombre`, `usuario` y `contrasena`.
+  En esta semana solo se consulta; la aplicación no lo modifica.
+- Las listas contienen objetos. Los índices por usuario de acceso y por código
+  de producto facilitan las consultas y se reconstruyen al cargar los JSON.
+- Después de registrar, actualizar o eliminar, el servicio guarda la nueva
+  colección antes de reemplazar la lista e índice en memoria.
+- `ArchivoServicio` escribe primero un archivo temporal junto al original y lo
+  reemplaza cuando termina. Si el guardado falla, se informa el error y se conserva
+  el estado anterior de productos en memoria. Los archivos temporales se limpian.
+- Al reiniciar, se recuperan los cambios guardados. Las rutas se calculan desde
+  la ubicación del proyecto; no dependen de una ruta personal ni de la carpeta de la terminal.
+- Un JSON ausente, dañado o con registros inválidos detiene el inicio con un aviso;
+  no se reemplaza automáticamente por una colección vacía.
 
-`LoginView` utiliza `Label`, `Entry` y `ttk.Button`. La contraseña se muestra con
-asteriscos. Un clic en **Iniciar sesión**, o la tecla **Enter** dentro de los
-campos, solicita la validación. Los campos vacíos y las credenciales incorrectas
-producen mensajes visibles sin salir del login.
+El acceso es una simulación pedagógica con credenciales locales. Esta entrega
+no añade gestión de usuarios, ventas completas, nuevas entidades ni base de datos.
+Tampoco incorpora `bind()`, doble clic, eventos personalizados de teclado o mouse,
+edición de celdas ni carga automática desde una fila de la tabla.
 
-`MainView` muestra una bienvenida, botones de consulta y el número de productos
-y usuarios. Las consultas se presentan como filas sencillas con etiquetas,
-siguiendo el alcance introductorio docente. El listado de usuarios muestra
-identificación, nombre y usuario de acceso. Al cerrar sesión se crean campos vacíos.
+## Ejecución
 
-## Requisitos y ejecución
-
-Se necesita **Python 3.10 o superior con Tkinter** y un entorno de escritorio.
-La aplicación utiliza únicamente la biblioteca estándar; no requiere instalar
-paquetes con `pip`.
+Requisitos: **Python 3.10 o superior con Tkinter** y entorno gráfico disponible.
+Se verificó con Python 3.14.3 en Windows. No es necesario instalar dependencias.
 
 Desde la raíz del repositorio:
 
@@ -142,109 +176,57 @@ Desde la raíz del repositorio:
 python restaurante_app/main.py
 ```
 
-Desde la carpeta de la aplicación:
+En Windows también se puede utilizar `py restaurante_app/main.py`. Si la terminal
+ya está dentro de `restaurante_app`, ejecutar `python main.py`.
 
-```powershell
-cd restaurante_app
-python main.py
-```
+**Acceso de demostración:** usuario `ana`, contraseña `1234`.
 
-En Windows se puede sustituir `python` por `py`:
+Los datos iniciales conservan `U001 - ana` y los productos `P001 - Hamburguesa`
+($3.50, stock 8), `P002 - Jugo natural` ($1.50, stock 12) y `P003 - Salchipapa`
+($2.75, stock 5).
 
-```powershell
-py restaurante_app/main.py
-```
+## Comprobación desde la interfaz
 
-Para comprobar que la instalación dispone de Tkinter, ejecutar
-`python -m tkinter`: debe abrir una ventana de demostración. Si falta el módulo,
-habilitar el componente Tcl/Tk de la instalación de Python.
-
-Las rutas de los JSON se calculan desde la ubicación de `main.py`; también puede
-ejecutarse indicando su ruta completa desde otra carpeta. Para terminar la
-aplicación, cerrar la ventana con **X**. **Cerrar sesión** regresa al login.
-
-### Credenciales de demostración
-
-| Usuario | Contraseña | Identificación |
-| --- | --- | --- |
-| `ana` | `1234` | `U001` |
-
-El acceso es una **simulación pedagógica local**. La contraseña incluida es un
-dato de prueba almacenado en JSON en texto plano. Los asteriscos solo ocultan
-los caracteres del campo; esta práctica no implementa autenticación real.
-
-### Datos incluidos
-
-| Código | Producto | Precio | Stock |
-| --- | --- | ---: | ---: |
-| P001 | Hamburguesa | $3.50 | 8 |
-| P002 | Jugo natural | $1.50 | 12 |
-| P003 | Salchipapa | $2.75 | 5 |
-
-`productos.json` contiene `codigo`, `nombre`, `precio` y `stock`.
-`usuarios.json` contiene `identificacion`, `nombre`, `usuario` y `contrasena`.
-Los datos se cargan al iniciar. Esta versión solo consulta información: no cambia
-los JSON ni descuenta existencias. Si se editan los archivos, se debe reiniciar
-la aplicación para volver a cargarlos.
-
-Una colección vacía se muestra con un mensaje y cantidad cero. Si no hay usuarios,
-ninguna credencial permite ingresar. Un archivo ausente, dañado o con registros
-inválidos impide el inicio y se informa mediante un mensaje. También se rechazan
-códigos, identificaciones y nombres de acceso duplicados.
-
-## Comprobación del funcionamiento
+Esta secuencia puede realizarse en una copia del proyecto para conservar los datos
+iniciales. Registrar, actualizar y eliminar sí modifican `productos.json`.
 
 | Paso | Acción | Resultado esperado |
 | --- | --- | --- |
-| 1 | Ejecutar `main.py`. | Aparece primero la pantalla de acceso. |
-| 2 | Pulsar Iniciar sesión con campos vacíos. | Mensaje «Ingrese usuario y contraseña». |
-| 3 | Escribir `ana` y una contraseña incorrecta. | Mensaje «Credenciales incorrectas»; permanece en el login. |
-| 4 | Ingresar `ana` y `1234`. | Aparece el panel principal en la misma ventana. |
-| 5 | Pulsar Productos. | Aparecen los tres productos con los precios y stock de la tabla anterior. |
-| 6 | Pulsar Usuarios. | Aparece `U001 - ana`, con usuario de acceso `ana`. |
-| 7 | Observar la barra inferior. | Indica 3 productos y 1 usuario. |
-| 8 | Pulsar Ventas (pendiente). | Aparece un mensaje que indica que se incorporarán después. |
-| 9 | Pulsar Cerrar sesión. | Regresa al login con campos vacíos, dentro de la misma ventana. |
-| 10 | Volver a ingresar y consultar. | Se repite el flujo sin crear otra ventana principal. |
+| 1 | Abrir main.py e intentar acceder con campos vacíos y con una contraseña incorrecta. | Mensajes visibles; permanece en el login. |
+| 2 | Acceder con `ana / 1234` y abrir Usuarios. | Panel principal y tabla con U001, ana y usuario ana. |
+| 3 | Abrir Productos; escribir `P001` y pulsar Cargar por código. | Formulario con Hamburguesa, precio 3.5 y stock 8. |
+| 4 | Pulsar Limpiar; completar `P014`, `Ensalada`, `4.50`, `6` y pulsar Registrar. | Cuatro productos; Ensalada aparece en la tabla y se confirma el guardado. |
+| 5 | Intentar registrar otra vez P014 o actualizarlo con stock `1.5`. | Mensaje de validación; datos anteriores intactos. |
+| 6 | Cargar P014; cambiar nombre a `Ensalada especial`, precio a `5.25` y stock a `9`; pulsar Actualizar. | Tabla y archivo reflejan los cambios. |
+| 7 | Cerrar la aplicación, abrirla, iniciar sesión y cargar P014. | Se recuperan Ensalada especial, 5.25 y 9. |
+| 8 | Pulsar Eliminar y cancelar; después repetir y confirmar. | Cancelar conserva el registro; confirmar lo elimina y actualiza tabla y conteo. |
+| 9 | Cerrar, volver a abrir y consultar P014. | Se informa que ya no existe; permanecen los tres productos iniciales. |
+| 10 | Pulsar Cerrar sesión. | Regreso al login dentro de la misma ventana. |
 
-La separación se puede revisar en el código: las vistas llaman a
-`RestauranteServicio` y no importan `json` ni abren archivos. `main.py` contiene
-la única creación de `Tk()` y la única llamada a `mainloop()`.
+Se comprobaron las operaciones con botones reales de Tkinter, los reinicios,
+validaciones, cancelación de eliminación, consulta de usuarios, tablas vacías y
+con desplazamiento, conteos y manejo de un fallo de guardado. Las comprobaciones
+utilizaron datos temporales y conservaron los JSON iniciales de la entrega.
 
-### Revisión realizada
+## Correspondencia con los criterios de evaluación
 
-Se verificó la aplicación con **Python 3.14.3 y Tkinter 8.6.15 en Windows**.
-Se comprobaron los mensajes del login, el acceso válido, los botones de consulta,
-los datos mostrados, el aviso solicitado por Ventas y el retorno al login.
-También se repitió el acceso y cierre de sesión para comprobar que se conservan
-la ventana principal y el servicio. Las comprobaciones internas se realizaron
-fuera de la carpeta de entrega.
-
-| Criterio de Semana 13 | Evidencia verificable |
+| Criterio | Evidencia |
 | --- | --- |
-| 1. Estructura y separación de responsabilidades | Carpetas obligatorias, modelos Producto y Usuario y servicios independientes de las vistas. |
-| 2. Interfaz de acceso | Campos de usuario y contraseña, mensajes visibles y llamada a `validar_acceso()`. |
-| 3. Panel y consultas mediante servicios | Botones Productos y Usuarios, datos cargados por el servicio y Ventas identificada como pendiente. |
-| 4. Ejecución y flujo | Entrada en `main.py`, una ventana, un ciclo y regreso al login sin perder la aplicación. |
-| 5. Documentación | Propósito, continuidad, estructura, responsabilidades, flujo y pasos de ejecución en este README. |
+| Evolución y arquitectura | Base de Semana 13 conservada; mismas capas, modelos y datos iniciales. |
+| Gestión de productos | Registro, carga por código, actualización y eliminación mediante RestauranteServicio y JSON. |
+| Componentes, contenedores y experiencia de usuario | Menú lateral, Frame, LabelFrame, formulario, botones, tablas, barras y mensajes organizados. |
+| Ejecución y funcionamiento | Acceso, navegación, usuarios, operaciones, refresco y persistencia; una ventana principal. |
+| Documentación | Propósito, continuidad, estructura, componentes, operaciones, persistencia, ejecución y secuencia de comprobación. |
 
-## Entrega en GitHub
+## Referencias y entrega
 
-Repositorio de esta actividad:
-[POO-Semana-13-Restaurante](https://github.com/DavidRivadeneira/POO-Semana-13-Restaurante).
+- Consigna y rúbrica de Semana 14 publicadas en el EVA.
+- Guía y diapositivas de Semana 14: Componentes y contenedores.
+- [Proyecto docente de Semana 14](https://github.com/kevin10lascano-sketch/Clase-Semana-14-POO).
+- [Explorador de componentes de Semana 14.1](https://github.com/kevin10lascano-sketch/Clase-Semana-14.1-POO).
 
-La consigna requiere un **nuevo repositorio público de Semana 13**. Publicar
-el contenido de esta carpeta conservando `restaurante_app/` y sus subcarpetas,
-con el README principal visible en la raíz. No entregar solamente un ZIP.
+Se revisaron y ejecutaron los dos ejemplos docentes. Su organización se adapta
+al dominio del restaurante y a los datos del proyecto anterior.
 
-Antes de entregar, abrir el enlace sin iniciar sesión y comprobar que los
-archivos sean visibles. En Moodle/EVA se entrega únicamente el enlace del nuevo
-repositorio público. Guardar el proyecto localmente no completa ese paso.
-
-## Referencias de trabajo
-
-- Guía de Semana 13: fundamentos de GUI, ventana única y separación de capas.
-- Diapositivas de Semana 13: componentes básicos de Tkinter y manejo de eventos.
-- Consigna y rúbrica de Semana 13 publicadas en el EVA.
-- [Biblioteca App de Semana 13](https://github.com/kevin10lascano-sketch/Clase-Semana-13-POO): referencia estructural y funcional revisada y ejecutada antes de la adaptación.
-- Proyecto personal de Semana 12: origen de los productos, usuario y organización modular.
+**Enlace de entrega:** [POO-Semana-14-Restaurante](https://github.com/DavidRivadeneira/POO-Semana-14-Restaurante).
+En el EVA se entrega únicamente el enlace del repositorio público de Semana 14.
