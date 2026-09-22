@@ -16,5 +16,11 @@
         "nombre": "Salchipapa",
         "precio": 2.75,
         "stock": 5
+    },
+    {
+        "codigo": "P004",
+        "nombre": "Coca Cola",
+        "precio": 0.76,
+        "stock": 10
     }
 ]
