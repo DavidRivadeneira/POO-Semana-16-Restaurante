@@ -1,6 +1,9 @@
-"""Carga objetos y concentra las operaciones de usuarios y productos."""
+"""Concentra el acceso, los productos y las ventas; delega la persistencia."""
+from datetime import date
+
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from modelos.venta import Venta
 
 
 class RestauranteServicio:
@@ -8,6 +11,8 @@ class RestauranteServicio:
         self.archivo_servicio = archivo_servicio
         self._usuarios = []
         self._productos = []
+        self._ventas = []
+        self._usuarios_por_id = {}
         self._usuarios_por_acceso = {}
         self._productos_por_codigo = {}
         self.cargar_datos()
@@ -16,11 +21,13 @@ class RestauranteServicio:
         # ArchivoServicio lee diccionarios; este servicio los convierte en objetos.
         usuarios_json = self.archivo_servicio.leer_json("usuarios.json")
         productos_json = self.archivo_servicio.leer_json("productos.json")
+        ventas_json = self.archivo_servicio.leer_json("ventas.json")
         try:
             usuarios = [Usuario(d["identificacion"], d["nombre"], d["usuario"],
                                 d["contrasena"]) for d in usuarios_json]
             productos = [Producto(d["codigo"], d["nombre"], d["precio"],
                                   d["stock"]) for d in productos_json]
+            ventas = [Venta(**d) for d in ventas_json]
         except (KeyError, TypeError, ValueError) as error:
             raise ValueError(f"Registro inválido en los datos del restaurante: {error}") from error
 
@@ -32,9 +39,13 @@ class RestauranteServicio:
             raise ValueError("Existen identificaciones duplicadas en usuarios.json.")
         if len({p.codigo for p in productos}) != len(productos):
             raise ValueError("Existen códigos duplicados en productos.json.")
+        if len({int(v.identificador[1:]) for v in ventas}) != len(ventas):
+            raise ValueError("Existen identificadores duplicados en ventas.json.")
 
         self._usuarios = usuarios
         self._productos = productos
+        self._ventas = ventas
+        self._usuarios_por_id = {u.identificacion: u for u in usuarios}
         self._usuarios_por_acceso = indice
         self._productos_por_codigo = {p.codigo: p for p in productos}
 
@@ -59,6 +70,35 @@ class RestauranteServicio:
 
     def cantidad_productos(self):
         return len(self._productos)
+
+    def listar_ventas(self):
+        return self._ventas.copy()
+
+    def cantidad_ventas(self):
+        return len(self._ventas)
+
+    def registrar_venta(self, usuario_id, producto_codigo):
+        # La vista solo entrega las selecciones; las reglas se comprueban aquí.
+        if not isinstance(usuario_id, str) or not usuario_id.strip():
+            raise ValueError("Seleccione un usuario para registrar la venta.")
+        if not isinstance(producto_codigo, str) or not producto_codigo.strip():
+            raise ValueError("Seleccione un producto para registrar la venta.")
+        usuario = self._usuarios_por_id.get(usuario_id.strip())
+        producto = self._productos_por_codigo.get(producto_codigo.strip())
+        if usuario is None:
+            raise ValueError("El usuario seleccionado no existe.")
+        if producto is None:
+            raise ValueError("El producto seleccionado no existe.")
+        siguiente = max((int(v.identificador[1:]) for v in self._ventas), default=0) + 1
+        venta = Venta(f"V{siguiente:03d}", usuario.identificacion, producto.codigo,
+                      date.today().isoformat(), usuario.nombre, producto.nombre)
+        ventas = self._ventas + [venta]
+        # Conserva los nombres del momento de la venta, aunque cambie el catálogo.
+        # Primero guarda: un fallo no agrega una venta ficticia a la memoria.
+        self.archivo_servicio.escribir_json(
+            "ventas.json", [v.convertir_a_diccionario() for v in ventas])
+        self._ventas = ventas
+        return venta
 
     def buscar_producto_por_codigo(self, codigo):
         codigo = Producto.validar_texto(codigo, "código")

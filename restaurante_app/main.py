@@ -7,14 +7,17 @@ from servicios.archivo_servicio import ArchivoServicio
 from servicios.restaurante_servicio import RestauranteServicio
 from ui.login_view import LoginView
 from ui.main_view import MainView
+from ui.recursos import cargar_imagen
 
 
 class AplicacionRestaurante:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Restaurante App - Semana 14")
+        self.root.title("Restaurante App - Semana 15")
         self.root.geometry("1040x680")
         self.root.minsize(940, 620)
+        self.icono = cargar_imagen(self.root, "logo/icono.png")
+        self.root.iconphoto(True, self.icono)
 
         ruta_base = Path(__file__).resolve().parent
         archivo_servicio = ArchivoServicio(ruta_base / "datos")

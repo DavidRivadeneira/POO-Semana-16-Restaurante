@@ -1,6 +1,7 @@
 """Pantalla de acceso: recoge credenciales y solicita su validación al servicio."""
 import tkinter as tk
 from tkinter import ttk
+from ui.recursos import cargar_imagen
 
 
 class LoginView(tk.Frame):
@@ -21,6 +22,8 @@ class LoginView(tk.Frame):
     def construir_interfaz(self):
         contenedor = tk.Frame(self, bg="white", padx=32, pady=28)
         contenedor.place(relx=0.5, rely=0.5, anchor="center")
+        self.logo = cargar_imagen(self, "logo/logo.png")
+        tk.Label(contenedor, image=self.logo, bg="white").pack(pady=(0, 10))
         tk.Label(contenedor, text="RESTAURANTE APP", bg="white", fg="#472d23",
                  font=("Arial", 22, "bold")).pack(pady=(0, 8))
         tk.Label(contenedor, text="Inicia sesión para gestionar el restaurante",
@@ -42,7 +45,7 @@ class LoginView(tk.Frame):
         self.boton_ingresar = ttk.Button(contenedor, text="Iniciar sesión",
                                          style="Login.TButton", command=self.iniciar_sesion)
         self.boton_ingresar.pack(fill="x")
-        tk.Label(contenedor, text="Acceso de demostración · Semana 14", bg="white",
+        tk.Label(contenedor, text="Acceso de demostración · Semana 15", bg="white",
                  fg="#67594f", font=("Arial", 9)).pack(pady=(16, 0))
 
     def iniciar_sesion(self):
