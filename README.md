@@ -84,9 +84,6 @@ sencilla y **no modifica stock**, igual que en Semana 15.
 Repositorio/
 ├── README.md
 ├── .gitignore
-├── tests/
-│   ├── test_restaurante.py
-│   └── test_usuarios.py
 ├── docs/evidencias/
 │   ├── usuarios.png           (Semana 16)
 │   ├── login.png              (evidencia de Semana 15)
@@ -242,18 +239,10 @@ no se necesitan descargas ni conversión de SVG al ejecutar.
 
 ## Comprobación de funcionamiento
 
-Las **32 pruebas automatizadas pasaron** con Python 3.14.3 en Windows: 18
-conservadas y adaptadas de Semana 15 y 14 nuevas para Usuarios. Usan copias
-temporales, botones Tkinter con `invoke()` y eventos con `event_generate()` y
-procesamiento del bucle de Tkinter. Se intercepta la confirmación de eliminación
-para comprobar tanto aceptar como cancelar. Requieren un entorno gráfico.
-
-```bash
-python -B -m unittest discover -s tests -v
-```
-
-También se revisó visualmente la pantalla y se comprobó mediante interacción
-directa la selección de filas y Escape. La captura superior documenta esa revisión.
+Se verificaron las **15 comprobaciones mínimas de la consigna** con Python
+3.14.3 en Windows, utilizando copias temporales de los datos. También se revisó
+visualmente la pantalla. La siguiente tabla permite repetir la revisión manual;
+la captura superior muestra la selección y carga de un usuario.
 
 | Comprobación mínima de la consigna | Resultado verificado |
 | --- | --- |
@@ -261,7 +250,8 @@ directa la selección de filas y Escape. La captura superior documenta esa revis
 | 2. Login, navegación, Productos y Ventas | Acceso, salida, CRUD de productos y ventas conservados. |
 | 3. Administrador | Menú y formulario de Usuarios disponibles. |
 | 4. Empleado y Cliente | Sin menú; acceso directo y operaciones administrativas rechazados. |
-| 5–6. Registro y tabla | Ambos roles; fila y contador actualizados. |
+| 5. Registrar usuarios | Registrar un Empleado y un Cliente; ambos se guardan correctamente. |
+| 6. Mostrar el registro | Cada nuevo usuario aparece en la tabla y se actualiza el contador. |
 | 7. Selección | Consulta por identificación y carga automática sin contraseña en tabla. |
 | 8. Actualización | Datos e índices de acceso conservados al recargar. |
 | 9. Eliminación | Cancelar conserva; confirmar elimina del JSON y la tabla. |
@@ -285,7 +275,7 @@ copia de la carpeta del proyecto.
 | Gestión de usuarios y roles (2 puntos) | CRUD, tres roles, control administrativo y usuarios.json mediante el servicio. |
 | Manejo de eventos (2 puntos) | Cuatro eventos con bind, callbacks con event y botones con command. |
 | Interfaz y experiencia (2 puntos) | Formulario, tabla, navegación, mensajes, atajos, logo e íconos desde assets. |
-| Documentación (2 puntos) | Propósito, continuidad, estructura, roles, eventos, persistencia, ejecución y pruebas. |
+| Documentación (2 puntos) | Propósito, continuidad, estructura, roles, eventos, persistencia, ejecución y las 15 comprobaciones mínimas. |
 
 La tabla identifica las evidencias; la calificación corresponde al docente.
 
