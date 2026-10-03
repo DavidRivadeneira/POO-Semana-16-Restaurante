@@ -1,12 +1,16 @@
-"""Usuario anterior con los campos necesarios para el acceso simulado."""
+"""Usuario del restaurante con credenciales didácticas y un rol básico."""
 
 
 class Usuario:
-    def __init__(self, identificacion, nombre, usuario, contrasena):
+    ROLES = ("Administrador", "Empleado", "Cliente")
+    ROLES_GESTIONABLES = ("Empleado", "Cliente")
+
+    def __init__(self, identificacion, nombre, usuario, contrasena, rol="Cliente"):
         self.identificacion = identificacion
         self.nombre = nombre
         self.usuario = usuario
         self.contrasena = contrasena
+        self.rol = rol
 
     @staticmethod
     def validar_texto(valor, campo):
@@ -49,3 +53,19 @@ class Usuario:
     @contrasena.setter
     def contrasena(self, valor):
         self._contrasena = self.validar_texto(valor, "contraseña")
+
+    @property
+    def rol(self):
+        return self._rol
+
+    @rol.setter
+    def rol(self, valor):
+        valor = self.validar_texto(valor, "rol")
+        if valor not in self.ROLES:
+            raise ValueError("El rol debe ser Administrador, Empleado o Cliente.")
+        self._rol = valor
+
+    def convertir_a_diccionario(self):
+        return {"identificacion": self.identificacion, "nombre": self.nombre,
+                "usuario": self.usuario, "contrasena": self.contrasena,
+                "rol": self.rol}

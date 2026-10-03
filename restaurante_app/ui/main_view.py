@@ -1,6 +1,7 @@
 """Vistas de consulta y gestión: los botones delegan las operaciones al servicio."""
 import tkinter as tk
 from tkinter import messagebox, ttk
+from modelos.usuario import Usuario
 from ui.recursos import cargar_imagen
 
 
@@ -49,12 +50,14 @@ class MainView(tk.Frame):
         tk.Label(lateral, image=self.logo, bg="#472d23").pack(anchor="w", pady=(0, 10))
         tk.Label(lateral, text="RESTAURANTE\nAPP", bg="#472d23", fg="white",
                  justify="left", font=("Arial", 13, "bold")).pack(anchor="w")
-        tk.Label(lateral, text=f"Sesión de {self.usuario_actual.nombre}", wraplength=146,
+        tk.Label(lateral, text=f"Sesión de {self.usuario_actual.nombre}\n{self.usuario_actual.rol}", wraplength=146,
                  justify="left", bg="#472d23", fg="#eadbc9",
                  font=("Arial", 10)).pack(anchor="w", pady=(10, 26))
         self.boton_inicio = self.crear_boton_menu(lateral, "Inicio", self.mostrar_inicio)
         self.boton_productos = self.crear_boton_menu(lateral, "Productos", self.mostrar_productos)
-        self.boton_usuarios = self.crear_boton_menu(lateral, "Usuarios", self.mostrar_usuarios)
+        self.boton_usuarios = None
+        if self.usuario_actual.rol == "Administrador":
+            self.boton_usuarios = self.crear_boton_menu(lateral, "Usuarios", self.mostrar_usuarios)
         self.boton_ventas = self.crear_boton_menu(lateral, "Ventas", self.mostrar_ventas)
         self.boton_cerrar = ttk.Button(lateral, text="Cerrar sesión", style="Secundario.TButton",
                                        image=self.iconos["salir"], compound="left",
@@ -97,7 +100,7 @@ class MainView(tk.Frame):
 
     def mostrar_inicio(self):
         self.preparar_seccion("Inicio", "Panel del restaurante",
-                              "Gestiona productos, consulta usuarios y registra ventas desde el menú lateral.")
+                              "Gestiona el restaurante desde las opciones del menú lateral.")
         resumen = tk.Frame(self.contenido, bg="#f5f1eb")
         resumen.pack(fill="x", pady=(6, 24))
         for titulo, cantidad in (("Productos", self.restaurante_servicio.cantidad_productos()),
@@ -128,20 +131,195 @@ class MainView(tk.Frame):
                    style="Accion.TButton").pack(anchor="w", pady=(10, 0))
 
     def mostrar_usuarios(self):
-        self.preparar_seccion("Usuarios", "Usuarios registrados",
-                              "Consulta la identificación, el nombre y el usuario de acceso.")
-        listado = self.crear_grupo(self.contenido, "Consulta de usuarios")
+        try:
+            self.restaurante_servicio.validar_gestion_usuarios()
+        except ValueError as error:
+            messagebox.showerror("Gestión de usuarios", str(error), parent=self)
+            return
+        self.preparar_seccion("Usuarios", "Gestión de usuarios",
+                              "Selecciona una fila para editar. Enter: registrar · Esc: limpiar y cancelar.")
+        self.usuario_id_seleccionado = None
+        formulario = self.crear_grupo(self.contenido, "Datos del usuario")
+        formulario.pack(fill="x", pady=(0, 12))
+        formulario.columnconfigure(1, weight=1)
+        formulario.columnconfigure(3, weight=1)
+        self.usuario_identificacion_entry = self.crear_campo(formulario, "Identificación", 0)
+        self.usuario_nombre_entry = self.crear_campo(formulario, "Nombre", 1)
+        self.usuario_login_entry = self.crear_campo(formulario, "Usuario", 0, columna=2)
+        self.usuario_contrasena_entry = self.crear_campo(formulario, "Contraseña", 1, columna=2)
+        self.usuario_contrasena_entry.configure(show="*")
+        tk.Label(formulario, text="Rol", bg="white", fg="#472d23", font=("Arial", 10)).grid(
+            row=2, column=0, sticky="w", padx=(0, 10))
+        self.usuario_rol_combo = ttk.Combobox(formulario, values=Usuario.ROLES_GESTIONABLES,
+                                             state="readonly", width=18, font=("Arial", 10))
+        self.usuario_rol_combo.grid(row=2, column=1, sticky="ew", ipady=3)
+        self.usuario_rol_estado = tk.StringVar()
+        tk.Label(formulario, textvariable=self.usuario_rol_estado, bg="white", fg="#67594f",
+                 font=("Arial", 10), anchor="w").grid(row=2, column=2, columnspan=2,
+                                                       sticky="ew", padx=(14, 0))
+        acciones = tk.Frame(formulario, bg="white")
+        acciones.grid(row=3, column=0, columnspan=4, sticky="ew", pady=(12, 0))
+        self.botones_usuario = {}
+        for columna, (texto, comando, estilo) in enumerate((
+            ("Registrar", self.registrar_usuario, "Accion.TButton"),
+            ("Actualizar", self.actualizar_usuario, "Accion.TButton"),
+            ("Eliminar", self.eliminar_usuario, "Eliminar.TButton"),
+            ("Limpiar", self.limpiar_formulario_usuario, "Secundario.TButton"),
+        )):
+            acciones.columnconfigure(columna, weight=1)
+            boton = ttk.Button(acciones, text=texto, command=comando, style=estilo,
+                               image=self.iconos[texto.lower()], compound="left")
+            boton.grid(row=0, column=columna, sticky="ew", padx=(0, 6))
+            self.botones_usuario[texto] = boton
+        self.mensaje_usuario = tk.StringVar()
+        self.etiqueta_mensaje_usuario = tk.Label(formulario, textvariable=self.mensaje_usuario,
+            bg="white", fg="#67594f", font=("Arial", 10), justify="left", anchor="w",
+            wraplength=640, height=2)
+        self.etiqueta_mensaje_usuario.grid(row=4, column=0, columnspan=4, sticky="ew", pady=(8, 0))
+        listado = self.crear_grupo(self.contenido, "Usuarios registrados · selecciona para consultar")
         listado.pack(fill="both", expand=True)
+        self.etiqueta_total_usuarios = tk.Label(listado, bg="white", fg="#67594f", font=("Arial", 10))
+        self.etiqueta_total_usuarios.pack(side="bottom", anchor="w", pady=(6, 0))
         self.tabla_usuarios = self.crear_tabla(listado,
-            (("identificacion", "Identificación", 130), ("nombre", "Nombre", 220),
-             ("usuario", "Usuario", 150)))
+            (("identificacion", "Identificación", 110), ("nombre", "Nombre", 180),
+             ("usuario", "Usuario", 130), ("rol", "Rol", 130)))
+        self.tabla_usuarios.configure(selectmode="browse", height=5)
+        # Eventos locales: desaparecen al destruir esta sección; no afectan Ventas.
+        self.tabla_usuarios.bind("<<TreeviewSelect>>", self.al_seleccionar_usuario)
+        self.usuario_rol_combo.bind("<<ComboboxSelected>>", self.al_seleccionar_rol)
+        for widget in (*self.entradas_usuario(), self.usuario_rol_combo):
+            widget.bind("<Return>", self.al_presionar_enter)
+        for widget in (*self.entradas_usuario(), self.usuario_rol_combo,
+                       self.tabla_usuarios, *self.botones_usuario.values()):
+            widget.bind("<Escape>", self.al_presionar_escape)
+        self.refrescar_usuarios()
+        self.limpiar_formulario_usuario()
+
+    def entradas_usuario(self):
+        return (self.usuario_identificacion_entry, self.usuario_nombre_entry,
+                self.usuario_login_entry, self.usuario_contrasena_entry)
+
+    def obtener_datos_usuario(self):
+        return (*[entrada.get() for entrada in self.entradas_usuario()], self.usuario_rol_combo.get())
+
+    def mostrar_mensaje_usuario(self, texto, error=False):
+        self.mensaje_usuario.set(texto)
+        self.etiqueta_mensaje_usuario.configure(fg="#b42318" if error else "#23633c")
+
+    def al_seleccionar_usuario(self, event):
+        seleccion = event.widget.selection()
+        if not seleccion:
+            return
+        # El iid contiene solo la clave. El objeto y su contraseña vienen del servicio.
+        usuario = self.restaurante_servicio.buscar_usuario_por_identificacion(seleccion[0])
+        if usuario is None:
+            self.refrescar_usuarios()
+            self.limpiar_formulario_usuario()
+            self.mostrar_mensaje_usuario("El usuario seleccionado ya no existe.", error=True)
+            return
+        self.usuario_id_seleccionado = usuario.identificacion
+        valores = (usuario.identificacion, usuario.nombre, usuario.usuario, usuario.contrasena)
+        for entrada, valor in zip(self.entradas_usuario(), valores):
+            entrada.configure(state="normal")
+            entrada.delete(0, tk.END)
+            entrada.insert(0, valor)
+        # Identificación estable; los otros campos se editan solo para empleado/cliente.
+        protegida = usuario.rol == "Administrador"
+        self.usuario_identificacion_entry.configure(state="readonly")
+        for entrada in self.entradas_usuario()[1:]:
+            entrada.configure(state="readonly" if protegida else "normal")
+        self.usuario_rol_combo.configure(state="disabled" if protegida else "readonly")
+        self.usuario_rol_combo.set(usuario.rol)
+        self.actualizar_texto_rol()
+        self.botones_usuario["Registrar"].state(["disabled"])
+        for texto in ("Actualizar", "Eliminar"):
+            self.botones_usuario[texto].state(["disabled"] if protegida else ["!disabled"])
+        self.mostrar_mensaje_usuario("Cuenta administrativa protegida. Pulsa Limpiar para registrar otro usuario."
+            if protegida else f"Usuario {usuario.identificacion} seleccionado. Modifica sus datos y pulsa Actualizar.")
+
+    def registrar_usuario(self):
+        if self.usuario_id_seleccionado is not None:
+            self.mostrar_mensaje_usuario("Pulsa Limpiar o Escape antes de registrar un nuevo usuario.", error=True)
+            return
+        try:
+            usuario = self.restaurante_servicio.registrar_usuario(*self.obtener_datos_usuario())
+        except ValueError as error:
+            self.mostrar_mensaje_usuario(str(error), error=True)
+            return
+        self.refrescar_usuarios()
+        self.limpiar_formulario_usuario()
+        self.tabla_usuarios.see(usuario.identificacion)
+        self.mostrar_mensaje_usuario(f"Usuario {usuario.identificacion} registrado y guardado.")
+
+    def actualizar_usuario(self):
+        _, nombre, acceso, contrasena, rol = self.obtener_datos_usuario()
+        try:
+            usuario = self.restaurante_servicio.actualizar_usuario(
+                self.usuario_id_seleccionado, nombre, acceso, contrasena, rol)
+        except ValueError as error:
+            self.mostrar_mensaje_usuario(str(error), error=True)
+            return
+        self.refrescar_usuarios()
+        self.limpiar_formulario_usuario()
+        self.tabla_usuarios.see(usuario.identificacion)
+        self.mostrar_mensaje_usuario(f"Usuario {usuario.identificacion} actualizado y guardado.")
+
+    def eliminar_usuario(self):
+        if self.usuario_id_seleccionado is None:
+            self.mostrar_mensaje_usuario("Seleccione un usuario de la tabla.", error=True)
+            return
+        if not messagebox.askyesno("Eliminar usuario",
+                f"¿Eliminar al usuario {self.usuario_id_seleccionado}?\nLas ventas anteriores se conservan.",
+                parent=self):
+            return
+        try:
+            usuario = self.restaurante_servicio.eliminar_usuario(self.usuario_id_seleccionado)
+        except ValueError as error:
+            self.mostrar_mensaje_usuario(str(error), error=True)
+            return
+        self.refrescar_usuarios()
+        self.limpiar_formulario_usuario()
+        self.mostrar_mensaje_usuario(f"Usuario {usuario.identificacion} eliminado. Cambio guardado.")
+
+    def limpiar_formulario_usuario(self):
+        self.usuario_id_seleccionado = None
+        for entrada in self.entradas_usuario():
+            entrada.configure(state="normal")
+            entrada.delete(0, tk.END)
+        self.usuario_rol_combo.configure(state="readonly")
+        self.usuario_rol_combo.set("Cliente")
+        self.actualizar_texto_rol()
+        self.tabla_usuarios.selection_remove(self.tabla_usuarios.selection())
+        self.tabla_usuarios.focus("")
+        self.botones_usuario["Registrar"].state(["!disabled"])
+        for texto in ("Actualizar", "Eliminar"):
+            self.botones_usuario[texto].state(["disabled"])
+        self.mostrar_mensaje_usuario("Nuevo usuario: completa los campos y pulsa Registrar o Enter.")
+        self.usuario_identificacion_entry.focus_set()
+
+    def al_presionar_enter(self, event):
+        self.registrar_usuario()
+        return "break"
+
+    def al_presionar_escape(self, event):
+        self.limpiar_formulario_usuario()
+        return "break"
+
+    def al_seleccionar_rol(self, event):
+        self.actualizar_texto_rol()
+
+    def actualizar_texto_rol(self):
+        self.usuario_rol_estado.set(f"Rol seleccionado: {self.usuario_rol_combo.get()}")
+
+    def refrescar_usuarios(self):
+        for fila in self.tabla_usuarios.get_children():
+            self.tabla_usuarios.delete(fila)
         usuarios = self.restaurante_servicio.listar_usuarios()
         for usuario in usuarios:
-            self.tabla_usuarios.insert("", tk.END,
-                values=(usuario.identificacion, usuario.nombre, usuario.usuario))
-        if not usuarios:
-            tk.Label(listado, text="No hay usuarios registrados.", bg="white",
-                     fg="#67594f").pack(anchor="w", pady=(8, 0))
+            self.tabla_usuarios.insert("", tk.END, iid=usuario.identificacion,
+                values=(usuario.identificacion, usuario.nombre, usuario.usuario, usuario.rol))
+        self.etiqueta_total_usuarios.configure(text=f"{len(usuarios)} usuario(s) registrado(s) · Contraseñas fuera de la tabla")
+        self.actualizar_barra_estado()
 
     def mostrar_productos(self):
         self.preparar_seccion("Productos", "Gestión de productos",
@@ -191,11 +369,12 @@ class MainView(tk.Frame):
         return tk.LabelFrame(contenedor, text=titulo, bg="white", fg="#472d23",
                              font=("Arial", 10, "bold"), padx=12, pady=10)
 
-    def crear_campo(self, contenedor, texto, fila):
+    def crear_campo(self, contenedor, texto, fila, columna=0):
         tk.Label(contenedor, text=texto, bg="white", fg="#472d23",
-                 font=("Arial", 10)).grid(row=fila, column=0, sticky="w", padx=(0, 10), pady=(0, 8))
+                 font=("Arial", 10)).grid(row=fila, column=columna, sticky="w",
+                                         padx=(14 if columna else 0, 10), pady=(0, 8))
         entrada = ttk.Entry(contenedor, width=18, font=("Arial", 10))
-        entrada.grid(row=fila, column=1, sticky="ew", pady=(0, 8), ipady=3)
+        entrada.grid(row=fila, column=columna + 1, sticky="ew", pady=(0, 8), ipady=3)
         return entrada
 
     def crear_tabla(self, contenedor, columnas):

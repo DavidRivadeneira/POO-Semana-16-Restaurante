@@ -3,6 +3,7 @@
         "identificacion": "U001",
         "nombre": "ana",
         "usuario": "ana",
-        "contrasena": "1234"
+        "contrasena": "1234",
+        "rol": "Administrador"
     }
 ]

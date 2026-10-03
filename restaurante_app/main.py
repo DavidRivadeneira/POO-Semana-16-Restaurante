@@ -13,7 +13,7 @@ from ui.recursos import cargar_imagen
 class AplicacionRestaurante:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Restaurante App - Semana 15")
+        self.root.title("Restaurante App - Semana 16")
         self.root.geometry("1040x680")
         self.root.minsize(940, 620)
         self.icono = cargar_imagen(self.root, "logo/icono.png")
@@ -39,6 +39,7 @@ class AplicacionRestaurante:
         self.vista_actual.pack(fill="both", expand=True)
 
     def mostrar_login(self):
+        self.restaurante_servicio.cerrar_sesion()
         vista = LoginView(self.root, self.restaurante_servicio,
                           self.mostrar_interfaz_principal)
         self.cambiar_vista(vista)

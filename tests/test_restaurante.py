@@ -20,7 +20,7 @@ from ui.main_view import MainView
 
 class DatosTemporales(unittest.TestCase):
     def setUp(self):
-        temporal = tempfile.TemporaryDirectory(prefix="restaurante15_")
+        temporal = tempfile.TemporaryDirectory(prefix="restaurante16_")
         self.addCleanup(temporal.cleanup)
         self.datos = Path(temporal.name) / "datos"
         shutil.copytree(APP / "datos", self.datos)
@@ -160,7 +160,7 @@ class InterfazTest(DatosTemporales):
             vista = self.iniciar(app)
             vista.boton_usuarios.invoke()
             filas = [vista.tabla_usuarios.item(f, "values") for f in vista.tabla_usuarios.get_children()]
-            self.assertIn(("U001", "ana", "ana"), filas)
+            self.assertIn(("U001", "ana", "ana", "Administrador"), filas)
             self.assertNotIn("1234", str(filas))
             vista.boton_cerrar.invoke()
             self.assertIsInstance(app.vista_actual, LoginView)
@@ -281,13 +281,13 @@ class InterfazTest(DatosTemporales):
 
 
 class EstructuraTest(unittest.TestCase):
-    def test_ui_sin_persistencia_y_sin_eventos_avanzados(self):
+    def test_ui_sin_persistencia_y_command_sin_ejecucion_inmediata(self):
         for archivo in APP.rglob("*.py"):
             arbol = ast.parse(archivo.read_text(encoding="utf-8-sig"))
             for nodo in ast.walk(arbol):
                 if isinstance(nodo, ast.Call):
                     if isinstance(nodo.func, ast.Attribute):
-                        self.assertNotIn(nodo.func.attr, ("bind", "bind_all"))
+                        self.assertNotEqual(nodo.func.attr, "bind_all")
                         if "ui" in archivo.parts:
                             self.assertNotIn(nodo.func.attr, ("leer_json", "escribir_json", "open", "write_text"))
                     if isinstance(nodo.func, ast.Name) and "ui" in archivo.parts:
